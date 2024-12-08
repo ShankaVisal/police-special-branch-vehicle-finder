@@ -1,23 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { getVehicles, createVehicle, deleteVehicle } from '../api/vehicleApi';
-import VehicleCard from '../components/VehicleCard';
+import React, { useEffect, useState } from "react";
+import { getVehicles, createVehicle, deleteVehicle } from "../api/vehicleApi";
+import VehicleCard from "../components/VehicleCard";
 
 const ManageVehicles = () => {
   const [vehicles, setVehicles] = useState([]);
+
+  // State for adding a vehicle with all fields from the schema
   const [newVehicle, setNewVehicle] = useState({
-    vehicleNumber: '',
-    vehicleName: '',
-    vehicleBrand: '',
-    vehicleCategory: '',
-    manufactureYear: '',
-    chassyNumber: '',
-    engineNumber: '',
-    revenueLicenseNumber: '',
-    policeStation: '',
-    province: '',
-    policeOfficer: '',
-    temporaryLocation: '',
+    vehicleNumber: "",
+    vehicleName: "",
+    vehicleBrand: "",
+    vehicleImage: "",
+    chassyNumber: "",
+    engineNumber: "",
+    revenueLicenseNumber: "",
+    vehicleCategory: "",
+    manufactureYear: "",
+    policeStation: "",
+    province: "",
+    policeOfficer: "",
+    temporaryLocation: "",
     isActive: true,
+    isInPoliceGarage: true,
+    outsideGarageLocation: "",
+    fundAmount: 0,
   });
 
   useEffect(() => {
@@ -29,39 +35,17 @@ const ManageVehicles = () => {
       const data = await getVehicles();
       setVehicles(data);
     } catch (error) {
-      console.error('Error fetching vehicles:', error);
+      console.error("Error fetching vehicles:", error);
     }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewVehicle({
-      ...newVehicle,
-      [name]: value,
-    });
   };
 
   const handleCreate = async () => {
     try {
       await createVehicle(newVehicle);
       fetchVehicles();
-      setNewVehicle({
-        vehicleNumber: '',
-        vehicleName: '',
-        vehicleBrand: '',
-        vehicleCategory: '',
-        manufactureYear: '',
-        chassyNumber: '',
-        engineNumber: '',
-        revenueLicenseNumber: '',
-        policeStation: '',
-        province: '',
-        policeOfficer: '',
-        temporaryLocation: '',
-        isActive: true,
-      });
+      resetForm();
     } catch (error) {
-      console.error('Error creating vehicle:', error);
+      console.error("Error creating vehicle:", error);
     }
   };
 
@@ -70,131 +54,258 @@ const ManageVehicles = () => {
       await deleteVehicle(vehicleNumber);
       fetchVehicles();
     } catch (error) {
-      console.error('Error deleting vehicle:', error);
+      console.error("Error deleting vehicle:", error);
+    }
+  };
+
+  const resetForm = () => {
+    setNewVehicle({
+      vehicleNumber: "",
+      vehicleName: "",
+      vehicleBrand: "",
+      vehicleImage: "",
+      chassyNumber: "",
+      engineNumber: "",
+      revenueLicenseNumber: "",
+      vehicleCategory: "",
+      manufactureYear: "",
+      policeStation: "",
+      province: "",
+      policeOfficer: "",
+      temporaryLocation: "",
+      isActive: true,
+      isInPoliceGarage: true,
+      outsideGarageLocation: "",
+      fundAmount: 0,
+    });
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    if (type === "checkbox") {
+      setNewVehicle((prevState) => ({
+        ...prevState,
+        [name]: checked,
+        // Reset fields depending on logic
+        ...(name === "isActive" && checked
+          ? {
+              isInPoliceGarage: false,
+              outsideGarageLocation: "",
+              fundAmount: 0,
+            }
+          : {}),
+      }));
+    } else {
+      setNewVehicle((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
     }
   };
 
   return (
     <div>
       <h1>Manage Vehicles</h1>
-      
-      {/* Vehicle Form */}
-      <div style={formStyle}>
-        <h3>Add Vehicle Details</h3>
+      <h2>Add Vehicle</h2>
+      <div style={styles.formContainer}>
+        {/* General Vehicle Info */}
         <input
           type="text"
-          placeholder="Vehicle Number"
           name="vehicleNumber"
+          placeholder="Vehicle Number"
           value={newVehicle.vehicleNumber}
           onChange={handleChange}
         />
         <input
           type="text"
-          placeholder="Vehicle Name"
           name="vehicleName"
+          placeholder="Vehicle Name"
           value={newVehicle.vehicleName}
           onChange={handleChange}
         />
         <input
           type="text"
-          placeholder="Vehicle Brand"
           name="vehicleBrand"
+          placeholder="Vehicle Brand"
           value={newVehicle.vehicleBrand}
           onChange={handleChange}
         />
         <input
           type="text"
-          placeholder="Vehicle Category"
-          name="vehicleCategory"
-          value={newVehicle.vehicleCategory}
-          onChange={handleChange}
-        />
-        <input
-          type="number"
-          placeholder="Manufacture Year"
-          name="manufactureYear"
-          value={newVehicle.manufactureYear}
+          name="vehicleImage"
+          placeholder="Vehicle Image URL"
+          value={newVehicle.vehicleImage}
           onChange={handleChange}
         />
         <input
           type="text"
-          placeholder="Chassy Number"
           name="chassyNumber"
+          placeholder="Chassy Number"
           value={newVehicle.chassyNumber}
           onChange={handleChange}
         />
         <input
           type="text"
-          placeholder="Engine Number"
           name="engineNumber"
+          placeholder="Engine Number"
           value={newVehicle.engineNumber}
           onChange={handleChange}
         />
         <input
           type="text"
-          placeholder="Revenue License Number"
           name="revenueLicenseNumber"
+          placeholder="Revenue License Number"
           value={newVehicle.revenueLicenseNumber}
           onChange={handleChange}
         />
+        <select
+          name="vehicleCategory"
+          value={newVehicle.vehicleCategory}
+          onChange={handleChange}
+          style={styles.dropdown}
+        >
+          <option value="">Select a Category</option>
+          <option value="Truck">Truck</option>
+          <option value="Sedan">Sedan</option>
+          <option value="SUV">SUV</option>
+          <option value="Motorcycle">Motorcycle</option>
+        </select>
+
         <input
           type="text"
-          placeholder="Police Station"
+          name="manufactureYear"
+          placeholder="Manufacture Year"
+          value={newVehicle.manufactureYear}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
           name="policeStation"
+          placeholder="Police Station"
           value={newVehicle.policeStation}
           onChange={handleChange}
         />
-        <input
-          type="text"
-          placeholder="Province"
+        <select
           name="province"
           value={newVehicle.province}
           onChange={handleChange}
-        />
+          style={styles.dropdown}
+        >
+          <option value="">Select Province</option>
+          <option value="Western">Western</option>
+          <option value="Central">Central</option>
+          <option value="Southern">Southern</option>
+          <option value="Eastern">Eastern</option>
+          <option value="Northern">Northern</option>
+          <option value="North Western">North Western</option>
+          <option value="Uva">Uva</option>
+          <option value="Sabaragamuwa">Sabaragamuwa</option>
+        </select>
+
         <input
           type="text"
-          placeholder="Police Officer"
           name="policeOfficer"
+          placeholder="Police Officer"
           value={newVehicle.policeOfficer}
           onChange={handleChange}
         />
         <input
           type="text"
-          placeholder="Temporary Location"
           name="temporaryLocation"
+          placeholder="Temporary Location"
           value={newVehicle.temporaryLocation}
           onChange={handleChange}
         />
-        <button onClick={handleCreate} style={createButtonStyle}>
-          Add Vehicle
+
+        {/* isActive Checkbox */}
+        <label>
+          <input
+            type="checkbox"
+            name="isActive"
+            checked={newVehicle.isActive}
+            onChange={handleChange}
+          />
+          Is Active
+        </label>
+
+        {/* Render this part only if isActive is false */}
+        {!newVehicle.isActive && (
+          <>
+            {/* isInPoliceGarage Checkbox */}
+            <label>
+              <input
+                type="checkbox"
+                name="isInPoliceGarage"
+                checked={newVehicle.isInPoliceGarage}
+                onChange={handleChange}
+              />
+              Is in Police Garage
+            </label>
+
+            {/* Render these fields conditionally */}
+            {!newVehicle.isInPoliceGarage && (
+              <>
+                <input
+                  type="text"
+                  name="outsideGarageLocation"
+                  placeholder="Outside Garage Location"
+                  value={newVehicle.outsideGarageLocation}
+                  onChange={handleChange}
+                />
+                <input
+                  type="number"
+                  name="fundAmount"
+                  placeholder="Fund Amount"
+                  value={newVehicle.fundAmount}
+                  onChange={handleChange}
+                />
+              </>
+            )}
+          </>
+        )}
+
+        <button onClick={handleCreate} style={styles.createButton}>
+          Save Vehicle
         </button>
       </div>
 
-      {/* Display vehicles */}
+      <h2>Vehicles List</h2>
       <div>
         {vehicles.map((vehicle) => (
-          <VehicleCard key={vehicle.vehicleNumber} vehicle={vehicle} onDelete={handleDelete} />
+          <VehicleCard
+            key={vehicle.vehicleNumber}
+            vehicle={vehicle}
+            onDelete={handleDelete}
+          />
         ))}
       </div>
     </div>
   );
 };
 
-const formStyle = {
-  border: '1px solid #aaa',
-  padding: '10px',
-  marginBottom: '20px',
-  borderRadius: '5px',
-  maxWidth: '400px',
-};
-
-const createButtonStyle = {
-  backgroundColor: '#5bc0de',
-  color: 'white',
-  border: 'none',
-  padding: '8px 15px',
-  borderRadius: '5px',
-  cursor: 'pointer',
+// Inline CSS
+const styles = {
+  formContainer: {
+    display: "grid",
+    gap: "10px",
+    marginBottom: "20px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+  },
+  createButton: {
+    backgroundColor: "#28a745",
+    color: "white",
+    padding: "10px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    transition: "0.3s",
+  },
+  dropdown: {
+    padding: "8px",
+    border: "1px solid #ccc",
+    borderRadius: "4px",
+  },
 };
 
 export default ManageVehicles;
