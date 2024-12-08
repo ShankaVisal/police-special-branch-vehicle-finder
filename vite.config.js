@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000', // Proxy API requests to your backend server
+      '/api': 'https://police-spical-branch-transport-portal.onrender.com/', // Proxy API requests to your backend server
     },
   },
 });
